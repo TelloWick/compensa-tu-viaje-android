@@ -19,9 +19,11 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
-
+import android.os.PowerManager
 
 class TrackingForegroundService : Service() {
+    private var wakeLock: PowerManager.WakeLock? = null
+
     private companion object {
         const val CHANNEL_ID = "tracking_channel"
         const val NOTIFICATION_ID = 1001
@@ -35,6 +37,19 @@ class TrackingForegroundService : Service() {
     override fun onCreate() {
 
         super.onCreate()
+
+        val powerManager =
+            getSystemService(
+                POWER_SERVICE
+            ) as PowerManager
+
+        wakeLock =
+            powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "CompensaTuViaje:TrackingWakeLock"
+            )
+
+        wakeLock?.acquire()
 
         createNotificationChannel()
 
@@ -152,6 +167,13 @@ class TrackingForegroundService : Service() {
         fusedLocationClient.removeLocationUpdates(
             locationCallback
         )
+
+        wakeLock?.let {
+
+            if (it.isHeld) {
+                it.release()
+            }
+        }
 
         super.onDestroy()
     }

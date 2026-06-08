@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class LocationTrackerImpl : LocationTracker {
 
-    private val _points = MutableSharedFlow<GpsPoint>()
+    private val _points = MutableSharedFlow<GpsPoint>(
+        extraBufferCapacity = 100
+    )
 
     override val points: Flow<GpsPoint> =
         _points.asSharedFlow()
@@ -31,5 +33,13 @@ class LocationTrackerImpl : LocationTracker {
     override fun stop() {
         currentTripId = null
         _isTracking.value = false
+    }
+
+    fun emitPoint(point: GpsPoint) {
+        _points.tryEmit(point)
+    }
+
+    fun currentTripId(): String? {
+        return currentTripId
     }
 }

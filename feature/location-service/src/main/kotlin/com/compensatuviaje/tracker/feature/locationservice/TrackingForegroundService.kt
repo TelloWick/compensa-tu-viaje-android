@@ -10,6 +10,9 @@ import com.google.android.gms.location.Priority
 import android.location.Location
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
+import com.compensatuviaje.tracker.model.GpsPoint
+import java.time.Instant
+import android.util.Log
 
 class TrackingForegroundService : Service() {
 
@@ -45,8 +48,21 @@ class TrackingForegroundService : Service() {
                     return
                 }
 
-                // Aquí construiremos el GpsPoint
-                // en la siguiente fase
+                val gpsPoint = GpsPoint(
+                    tripId = "TEMP_TRIP",
+                    timestampIso = Instant.now().toString(),
+                    lat = location.latitude,
+                    lng = location.longitude,
+                    speedKmh = location.speed * 3.6,
+                    heading = location.bearing.toDouble(),
+                    accuracyMeters = location.accuracy.toDouble(),
+                    synced = false
+                )
+
+                Log.d(
+                    "TrackingService",
+                    gpsPoint.toString()
+                )
             }
         }
     }

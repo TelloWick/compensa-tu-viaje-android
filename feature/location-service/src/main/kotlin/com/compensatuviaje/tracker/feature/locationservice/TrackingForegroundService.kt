@@ -15,7 +15,7 @@ import java.time.Instant
 import android.util.Log
 
 class TrackingForegroundService : Service() {
-
+    private val capturedPoints = mutableListOf<GpsPoint>()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
 
@@ -63,6 +63,7 @@ class TrackingForegroundService : Service() {
                     "TrackingService",
                     gpsPoint.toString()
                 )
+                capturedPoints.add(gpsPoint)
             }
         }
     }

@@ -14,8 +14,18 @@ import com.compensatuviaje.tracker.model.GpsPoint
 import java.time.Instant
 import android.util.Log
 import android.os.Looper
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
+import androidx.core.app.NotificationCompat
+
 
 class TrackingForegroundService : Service() {
+    private companion object {
+        const val CHANNEL_ID = "tracking_channel"
+        const val NOTIFICATION_ID = 1001
+    }
     private val capturedPoints = mutableListOf<GpsPoint>()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
@@ -23,7 +33,15 @@ class TrackingForegroundService : Service() {
     private lateinit var locationCallback: LocationCallback
 
     override fun onCreate() {
+
         super.onCreate()
+
+        createNotificationChannel()
+
+        startForeground(
+            NOTIFICATION_ID,
+            buildNotification()
+        )
 
         fusedLocationClient =
             LocationServices.getFusedLocationProviderClient(this)
@@ -67,6 +85,39 @@ class TrackingForegroundService : Service() {
                 capturedPoints.add(gpsPoint)
             }
         }
+
+    }
+
+    private fun createNotificationChannel() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Seguimiento GPS",
+                NotificationManager.IMPORTANCE_LOW
+            )
+
+            val manager =
+                getSystemService(
+                    NotificationManager::class.java
+                )
+
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun buildNotification(): Notification {
+
+        return NotificationCompat.Builder(
+            this,
+            CHANNEL_ID
+        )
+            .setContentTitle("Compensa Tu Viaje")
+            .setContentText("Viaje en curso 🚛")
+            .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+            .setOngoing(true)
+            .build()
     }
 
     @android.annotation.SuppressLint("MissingPermission")

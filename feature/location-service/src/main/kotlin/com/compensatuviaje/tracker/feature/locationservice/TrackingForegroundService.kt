@@ -13,6 +13,7 @@ import com.google.android.gms.location.LocationResult
 import com.compensatuviaje.tracker.model.GpsPoint
 import java.time.Instant
 import android.util.Log
+import android.os.Looper
 
 class TrackingForegroundService : Service() {
     private val capturedPoints = mutableListOf<GpsPoint>()
@@ -68,16 +69,39 @@ class TrackingForegroundService : Service() {
         }
     }
 
+    @android.annotation.SuppressLint("MissingPermission")
     override fun onStartCommand(
         intent: Intent?,
         flags: Int,
         startId: Int
     ): Int {
 
+        try {
+
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+
+        } catch (securityException: SecurityException) {
+
+            Log.e(
+                "TrackingService",
+                "Permiso de ubicación no concedido",
+                securityException
+            )
+        }
+
         return START_STICKY
     }
 
     override fun onDestroy() {
+
+        fusedLocationClient.removeLocationUpdates(
+            locationCallback
+        )
+
         super.onDestroy()
     }
 
